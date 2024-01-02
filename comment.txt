@@ -1,0 +1,11 @@
+-user
+    -repo  เหลือ change password
+-account
+    -repo  เหลือ  deleteaccount (ที่เหลือยังไม่ทำ) เทสแล้ว
+-transfers
+    -เสร็จหมดทุกเส้น แล้ว **** เทสแล้ว
+-entries
+    -get statement ทำแล้ว และเทสแล้ว
+-sessions
+
+- models จะอยู่รวมกันใน 1 ไฟล์ แยก โดยใช้ // repo, service, controller
