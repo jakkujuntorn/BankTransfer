@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "user_message.proto";
+
+package users; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./users"; // package อันนี้เป็นของ go
+
+
+
+service User {
+    rpc CreateUser(Create_UserRequest) returns(StatusResponse);
+    rpc GetUser_ByUsername(Username) returns(Get_UserResponse);
+    rpc UpdateUser(User_UpdateRequest) returns(StatusResponse);
+    rpc ChangePassword(Change_PasswordRequest) returns(StatusResponse);
+}

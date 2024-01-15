@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package transfer; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./transfers"; // package อันนี้เป็นของ go
+
+message Create_TransferRequest{
+    string owner = 1;
+    int32 fromAccountID = 2;
+    int32 toAccountID =3;
+    int32 amount = 4;
+    google.protobuf.Timestamp created_date = 5;
+}
+
+message Create_DepositRequest{
+    string owner = 1;
+    int32 accountID = 2;
+    int32 amount = 4;
+}
+
+message Create_WithdrawRequest{
+    string owner = 1;
+    int32 accountID = 2;
+    int32 amount = 4;
+}
+
+message GetTransfer_ByIdRequest{
+    int32 accountID =1;
+    string owner = 2;
+    google.protobuf.Timestamp startTime = 32;
+    google.protobuf.Timestamp endTime = 4;
+}
+
+message GetTransfer_ByOwnerRequest{
+    string Owner = 1;
+    google.protobuf.Timestamp startTime = 2;
+    google.protobuf.Timestamp endTime = 3;
+}
+
+message GetTransfer_Response{
+    repeated DataTransfer_Response dataTransfer =1;
+}
+
+message DataTransfer_Response {
+    int32 account_id = 1;
+    int32 amount = 2;
+    google.protobuf.Timestamp created_at = 3;
+   string entries_type = 4;
+   string owner = 5 ;
+   int32 destination_account = 6 ;
+}
+
+message ListStatementRequest{
+    int32 accountID = 1;
+    string owner = 2;
+}
+
+message ListStatementResponse{
+    int32 accountID = 1;
+    int32 fromAccountID = 2;
+    int32 toAccountID = 3;
+    int32 amount = 4;
+    google.protobuf.Timestamp created_date = 5;
+}
+
+
+
+message StatusResponse {
+    string status = 1;
+}

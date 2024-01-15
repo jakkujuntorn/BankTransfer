@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package users; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./users"; // package อันนี้เป็นของ go
+
+message Create_UserRequest{
+    string username = 1;
+    string hashedPassword = 2;
+    string fullname = 3;
+    string email =4 ;
+    google.protobuf.Timestamp passwordChangedAt = 5;
+    google.protobuf.Timestamp createdAt = 6;
+    bool  isEmailVerified = 7;
+}
+
+message Get_UserResponse{
+    string username = 1;
+    string fullname = 2;
+    string email =3 ;
+    google.protobuf.Timestamp passwordChangedAt = 4;
+    google.protobuf.Timestamp createdAt = 5;
+}
+
+message Username {
+    string username = 1;
+}
+
+message User_UpdateRequest{
+    string username = 1;
+    string fullname = 2;
+    string email =3 ;
+}
+
+message Change_PasswordRequest{
+    string username = 1;
+    string password = 2;
+
+}
+
+message Create_DepositRequest{
+    Owner owner = 1;
+    AccountID accountID = 2;
+    Amount amount = 4;
+}
+
+message Create_WithdrawRequest{
+    Owner owner = 1;
+    AccountID accountID = 2;
+    Amount amount = 4;
+}
+
+message GetTransfer_ByIdRequest{
+    AccountID accountID =1;
+    google.protobuf.Timestamp startTime = 2;
+    google.protobuf.Timestamp endTime = 3;
+}
+
+message GetTransfer_ByOwnerRequest{
+    Owner Owner = 1;
+    google.protobuf.Timestamp startTime = 2;
+    google.protobuf.Timestamp endTime = 3;
+}
+
+message GetTransfer_Response{
+    Owner owner = 1;
+    FromAccountID fromAccountID = 2;
+    ToAccountID toAccountID =3;
+    Amount amount = 4;
+    google.protobuf.Timestamp created_date = 5;
+    int32 limit = 6;
+    int32 offset = 7;
+}
+
+message ListStatementRequest{
+    AccountID accountID = 1;
+}
+
+message ListStatementResponse{
+    AccountID accountID = 1;
+    FromAccountID fromAccountID = 2;
+    ToAccountID toAccountID = 3;
+    Amount amount = 4;
+    google.protobuf.Timestamp created_date = 5;
+}
+
+//********************************
+message Owner {
+    string owner = 1;
+}
+
+message AccountID {
+    int64 accountID = 1;
+}
+
+message FromAccountID {
+    int64 fromAccountID = 1;
+}
+
+message ToAccountID {
+    int64 toAccountID = 1;
+}
+
+message Amount {
+    int64 amount = 1;
+}
+
+message StatusResponse {
+    string status = 1;
+}

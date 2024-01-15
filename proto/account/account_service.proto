@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+
+import "account_message.proto"; // แบบนี้ gen ไม่ได้
+// import "account_message.proto"; // แบบนี้ gen ได้
+
+
+package account; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./account"; // package อันนี้เป็นของ go
+
+// build service have request and response
+// service หรือ func ใน go ที่จะเอาไปใช้ จะอยู่ฝั่ง server
+service Account {
+    // Create Accont ************************************
+    rpc CreateAccount(CreateAccountRequest) returns(StatusResponse){
+        option (google.api.http) = {// googel.api ต้อง gen ขึ้นมาเอง ***********
+            post : "/v1/account/createaccount"
+            body : "*"
+          };
+    };
+
+    // Get Accont ********************************
+    rpc GetAccount(GetAccountRequest) returns(GetAccountResponse){
+        option (google.api.http) = {// googel.api ต้อง gen ขึ้นมาเอง ***********
+            get : "/v1/account/getaccount"
+          };
+    };
+
+    // List Accont ********************************
+    rpc ListAccount(ListAccountRequest) returns(GetListAccount_Response){
+        option (google.api.http) = {// googel.api ต้อง gen ขึ้นมาเอง ***********
+            get : "/v1/account/listaccount"
+          };
+    
+    };
+    
+    // Delete Accont ********************************
+    rpc DeleteAccount(DeleteAccountRequest) returns(StatusResponse){
+        option (google.api.http) = {// googel.api ต้อง gen ขึ้นมาเอง ***********
+            post : "/v1/account/deleteaccount"
+            body : "*"
+          };
+    };
+ 
+}
+

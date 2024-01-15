@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package account; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./account"; // package อันนี้เป็นของ go
+
+
+message CreateAccountRequest{
+    Owner owner = 1;
+    Balance balance = 2;
+    Currency currency =3 ;
+    google.protobuf.Timestamp created_date = 4;
+}
+
+
+message GetAccountRequest{
+    ID id = 1;
+    Owner owner = 2; 
+}
+
+message GetAccountResponse{
+    ID id = 1;
+    Owner owner = 2;
+    Balance balance = 3;
+    Currency currency = 4;
+    google.protobuf.Timestamp created_date = 5;
+    // ErrorText errortext = 6;
+}
+
+message GetListAccount_Response {
+    repeated GetAccountResponse listAccount = 1;
+}
+
+
+message ListAccountRequest {
+Owner owner = 1;
+}
+
+message DeleteAccountRequest {
+    ID id =1;
+}
+
+
+//*******************************
+message ErrorText {
+    string text= 1;
+}
+
+message StatusResponse {
+    string status= 1;
+}
+
+
+message ID {
+    int32 id = 1;
+}
+
+message Owner {
+    string owner = 1;
+}
+
+message Balance {
+    int32 balance = 1;
+}
+
+message Currency {
+    string currency = 1;
+}
+
+
+

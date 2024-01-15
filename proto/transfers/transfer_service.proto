@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "transfer_message.proto";
+
+package transfer; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./transfers"; // package อันนี้เป็นของ go
+
+
+
+service Transfers {
+    rpc Create_Transfer(Create_TransferRequest) returns(StatusResponse);
+    rpc Create_Deposit(Create_DepositRequest) returns(StatusResponse);
+    rpc Create_Withdraw(Create_WithdrawRequest) returns(StatusResponse);
+    rpc GetTransfer_ById(GetTransfer_ByIdRequest) returns(GetTransfer_Response);// array
+    rpc GetTransfer_ByOwner(GetTransfer_ByOwnerRequest) returns(GetTransfer_Response); // array
+    rpc ListStatement(ListStatementRequest) returns(ListStatementResponse);
+}

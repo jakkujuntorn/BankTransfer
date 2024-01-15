@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package entries; // package อันนี้เป็นของ proto
+
+// build ลงใน project Go *****
+option go_package="./transfers"; // package อันนี้เป็นของ go
+
+message GetStaement_Request{
+    int32 accountId = 1;
+    google.protobuf.Timestamp startTime = 2;
+    google.protobuf.Timestamp endTime =3;
+}
+
+message GetStaement_Response{
+    int64 id = 1;
+    AccountID accountID = 2;
+    int64 amount = 3;
+    google.protobuf.Timestamp createdAt =4;
+    string entries_type=5;
+}
+
+message ErrorEntries {
+    string errorEntries = 1;
+}
