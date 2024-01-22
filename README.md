@@ -1,8 +1,8 @@
--middleware gRPC ขอข้ามไปก่อน มันเยอะสะเหลือเกิน
+- middleware gRPC ขอข้ามไปก่อน มันเยอะสะเหลือเกิน
 
 - Valisate data ต่างๆ
     -ทำเฉพาะ Transfer  เช็ค money ติดลบ กับ 0
- 
+- จะใส ECHO เพิ่ม เพื่อไม่ใช้ gRPC Gateway ***********
 
 -API ทุกเส้น ต้องปั้น response สวยๆออกไป
 - API User
