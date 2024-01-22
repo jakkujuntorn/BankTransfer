@@ -4,7 +4,6 @@ import (
 	"banktransfer/models"
 	"errors"
 	"fmt"
-
 	"gorm.io/gorm"
 )
 
@@ -58,7 +57,6 @@ func (ra *repo_Account) CreateAccount(account *models.CreateAccountParams) error
 }
 
 // GetAccount implements I_Repo_Account
-// ดึง account อันเดียว ของ owner นั้น
 func (ra *repo_Account) GetAccount(id int, owner string) (*models.Account, error) {
 	// fmt.Println("GetAccount server REpo")
 	
@@ -72,7 +70,6 @@ func (ra *repo_Account) GetAccount(id int, owner string) (*models.Account, error
 }
 
 // ListAccount implements I_Repo_Account
-// ดึง account ทั้งหมดของ  owner นั้นๆ
 func (ra *repo_Account) ListAccount(owner string) ([]models.Account, error) {
 	dataAccount := []models.Account{}
 	tx := ra.db.Table("accounts").Where("owner =?", owner).Find(&dataAccount)

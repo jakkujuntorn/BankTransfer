@@ -14,6 +14,8 @@ type I_Rero_Users interface {
 	GetUser_ByUsername(username string) (*models.UserResponse, error)
 	UpdateUser(username string, newData *models.UserUpdate) error
 	ChangePassword(data *userProto.Change_PasswordRequest) error
+	
+	// ไม่ได้ใช้ ******************
 	// Transaction_Postgres(func(*repo_user) error) error
 	Transaction_Postgres(func(*I_Rero_Users) error) error
 }

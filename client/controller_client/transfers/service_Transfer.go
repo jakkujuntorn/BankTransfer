@@ -2,6 +2,7 @@ package transfers
 
 import (
 	auth "banktransferclient/util/auth"
+	 "banktransferclient/util"
 	"context"
 	"errors"
 	"fmt"
@@ -43,6 +44,12 @@ func (ct *Controller_Transfer) Create_Transfer(ctx context.Context, in *Create_T
 
 	in.Owner = &payload.Audience
 
+	// เช็ค money value **************************
+	err =util.Validate_MoneyValue(in.GetAmount())
+	if err != nil {
+		return &StatusResponse{}, err
+	}
+
 	// to Server ******************************
 	data, err := ct.controller.Create_Transfer(ctx, in)
 	if err != nil {
@@ -68,6 +75,12 @@ func (ct *Controller_Transfer) Create_Deposit(ctx context.Context, in *Create_De
 
 	in.Owner = &payload.Audience
 
+	// เช็ค money value **************************
+	err =util.Validate_MoneyValue(in.GetAmount())
+	if err != nil {
+		return &StatusResponse{}, err
+	}
+
 	// to Server ***************************
 	status, err := ct.controller.Create_Deposit(ctx, in)
 	if err != nil {
@@ -92,6 +105,12 @@ func (ct *Controller_Transfer) Create_Withdraw(ctx context.Context, in *Create_W
 	}
 
 	in.Owner = &payload.Audience
+
+	// เช็ค money value **************************
+	err =util.Validate_MoneyValue(in.GetAmount())
+	if err != nil {
+		return &StatusResponse{}, err
+	}
 
 	// to Server ***************************
 	status, err := ct.controller.Create_Withdraw(ctx, in)

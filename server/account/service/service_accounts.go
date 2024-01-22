@@ -23,9 +23,6 @@ func New_Service_Account(ac account_Repo.I_Repo_Account) accountProto.AccountSer
 }
 
 func (sa *service_Account) CreateAccount(ctx context.Context, ac *accountProto.CreateAccountRequest) (*accountProto.StatusResponse, error) {
-	// fmt.Println(ac.GetOwner().Owner)
-	// fmt.Println(ac.GetBalance().Balance)
-	// fmt.Println(ac.GetCurrency().Currency)
 	fmt.Println("Create Account Server .....................")
 	return &accountProto.StatusResponse{}, nil
 }
@@ -38,30 +35,30 @@ func (sa *service_Account) GetAccount(ctx context.Context, data *accountProto.Ge
 		return &accountProto.GetAccountResponse{}, err
 	}
 
+	// to Repo ********************
 	accountDB, err := sa.accountRepo.GetAccount(id, data.GetOwner())
 	if err != nil {
 		return &accountProto.GetAccountResponse{}, err
 	}
 
-	// proto buf ************
+	// proto buf message ******************
 	accountResponse := &accountProto.GetAccountResponse{
 		Id:       &accountProto.ID{Id: int32(accountDB.ID)},
 		Owner:    &accountProto.Owner{Owner: accountDB.Owner},
 		Balance:  &accountProto.Balance{Balance: int32(accountDB.Balance)},
 		Currency: &accountProto.Currency{Currency: accountDB.Currency},
 		// ดูเรื่องเวลา ยังไม่ถูกใจ **********
-		CreatedDate: &timestamppb.Timestamp{
-			Seconds: accountDB.CreatedAt.Unix(),
-			Nanos:   int32(accountDB.CreatedAt.Nanosecond()),
-		},
-		
+		// CreatedDate: &timestamppb.Timestamp{
+		// 	Seconds: accountDB.CreatedAt.Unix(),
+		// 	Nanos:   int32(accountDB.CreatedAt.Nanosecond()),
+		// },
+		CreatedDate: timestamppb.New(accountDB.CreatedAt),
 	}
 
-	// return  &accountProto.GetAccountResponse{},nil
 	return accountResponse, nil
 }
 
-// return Array
+//ListAccount  (return Array) ****************
 func (sa *service_Account) ListAccount(ctx context.Context, data *accountProto.ListAccountRequest) (*accountProto.GetListAccount_Response, error) {
 	// fmt.Println("Owner :", data.GetOwner().Owner)
 	accountListDB, err := sa.accountRepo.ListAccount(data.GetOwner().Owner)
@@ -84,10 +81,11 @@ func (sa *service_Account) ListAccount(ctx context.Context, data *accountProto.L
 			Balance:  &accountProto.Balance{Balance: int32(v.Balance)},
 			Currency: &accountProto.Currency{Currency: v.Currency},
 			// CreatedDate: v.CreatedAt,
-			CreatedDate: &timestamppb.Timestamp{
-				Seconds: v.CreatedAt.Unix(),
-				Nanos:   int32(v.CreatedAt.Nanosecond()),
-			},
+			// CreatedDate: &timestamppb.Timestamp{
+			// 	Seconds: v.CreatedAt.Unix(),
+			// 	Nanos:   int32(v.CreatedAt.Nanosecond()),
+			// },
+			CreatedDate:timestamppb.New(v.CreatedAt),
 		}
 		account_List.ListAccount = append(account_List.ListAccount, &account)
 	}
@@ -100,4 +98,4 @@ func (sa *service_Account) DeleteAccount(context.Context, *accountProto.DeleteAc
 	return &accountProto.StatusResponse{}, nil
 }
 
-func (sa *service_Account) mustEmbedUnimplementedAccountServer() {}
+// func (sa *service_Account) mustEmbedUnimplementedAccountServer() {}

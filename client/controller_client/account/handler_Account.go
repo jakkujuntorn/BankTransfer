@@ -20,12 +20,12 @@ func New_Handler_Account(ac I_Account_Service) AccountClient {
 func (ha *Handler_Account) CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
 	fmt.Println("CreateAccount Controller Handler")
 	
-	err := ha.controller.CreateAccount(in)
+	status,err := ha.controller.CreateAccount(in)
 	if err != nil {
 		return &StatusResponse{}, err
 	}
 
-	return &StatusResponse{}, nil
+	return status, nil
 }
 
 // GetAccount implements AccountClient

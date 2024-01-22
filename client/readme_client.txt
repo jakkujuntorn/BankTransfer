@@ -1,9 +1,13 @@
 -middleware gRPC ขอข้ามไปก่อน มันเยอะสะเหลือเกิน
-- ดู Code ฝั่ง Client main.go มันลกมาๆ ********
+
+- Valisate data ต่าง ************* 
+    -ทำเฉพาะ Transfer  เช็ค money ติดลบ กับ 0
+ 
+
 -API ทุกเส้น ต้องปั้น response สวยๆออกไป
 - API User
     -Login เทสแล้ว
-    -CreateUser ยังไม่ได้เทส
+    -CreateUser ยังไม่ได้เทส **************
     -GetUser_ByUsername เทสแล้ว 
     -UpdateUser เทสแล้ว
     -ChangePassword  เทสแล้ว
@@ -13,7 +17,7 @@
                      ไม่อยากให้ดึงข้อมูลมาเช็คใน golang ***
                     - return
     -GetAccount เทสแล้ว
-        -ดูเรื่อง time ฝั่ง Server Service
+        -ปรับ ปั้นข้อมูลตรง time
     -ListAccount เทสแล้ว
     -Delete ยังไม่ได้เทส
 

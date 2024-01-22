@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+	"errors"
 )
 
 var (
@@ -16,6 +17,15 @@ func ValidateString(value string, minLength int, maxLength int) error {
 	if n < minLength || n > maxLength {
 		return fmt.Errorf("must contain from %d-%d characters", minLength, maxLength)
 	}
+	return nil
+}
+
+func Validate_MoneyValue(moneyValue int32) error {
+
+	if moneyValue <= 0 {
+		return errors.New("money is negative or zero")
+	}
+
 	return nil
 }
 

@@ -6,11 +6,8 @@ import (
 	"banktransfer/util"
 
 	"banktransfer/models"
-
-	// "banktransfer/transfers/repo"
 	context "context"
 	"fmt"
-
 	"errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -38,11 +35,7 @@ func (su *service_User) LoginUser(ctx context.Context, user *userProto.User_Logi
 		return &userProto.Get_UserResponse{}, errors.New("password is wrong")
 	}
 
-	// if data.HashedPassword != user.GetPassword() {
-	// 	return &userProto.Get_UserResponse{}, errors.New("password is wrong")
-	// }
-
-	ff := userProto.Get_UserResponse{
+	userResponse := userProto.Get_UserResponse{
 		Username:          data.Username,
 		Email:             data.Email,
 		Fullname:          data.FullName,
@@ -50,24 +43,22 @@ func (su *service_User) LoginUser(ctx context.Context, user *userProto.User_Logi
 		CreatedAt:         timestamppb.New(data.CreatedAt),
 	}
 
-	return &ff, nil
+	return &userResponse, nil
 }
 
 // CreateUser implements users.UserServer
 func (su *service_User) CreateUser(ctx context.Context, ur *userProto.Create_UserRequest) (*userProto.StatusResponse, error) {
 	fmt.Println("CreateUser Server service *******************")
-	fmt.Println("Email Server: ", ur.GetEmail())
+	
 	return &userProto.StatusResponse{
-		Status: "error proto server",
+		Status: "create user complete",
 	}, nil
 }
 
 // GetUser_ByUsername implements users.UserServer
 func (su *service_User) GetUser_ByUsername(ctx context.Context, username *userProto.Username) (*userProto.Get_UserResponse, error) {
 	fmt.Println("GetUser_ByUsername Server service ***********")
-	// ค่า  username.GetUsername() จะไม่มีเพราะ  method get จะไม่มี body มา
-	// fmt.Println("Username : ",username.GetUsername())
-
+	
 	// ต้องเอา username จาก  header *****
 	userResponse, err := su.repo.GetUser_ByUsername(username.GetUsername())
 	if err != nil {
@@ -103,8 +94,7 @@ func (su *service_User) ChangePassword(ctx context.Context, data *userProto.Chan
 	// ปั้นข้อมูลใหม่ ****************
 	data.Newpassword = hashPassword
 	
-	
-	// repo *****************
+	// repo **********************
 	err = su.repo.ChangePassword(data)
 	if err != nil {
 		return &userProto.StatusResponse{}, err
@@ -116,19 +106,19 @@ func (su *service_User) ChangePassword(ctx context.Context, data *userProto.Chan
 // UpdateUser implements users.UserServer
 func (su *service_User) UpdateUser(ctx context.Context, data *userProto.User_UpdateRequest) (*userProto.StatusResponse, error) {
 	fmt.Println("UpdateUser *******************")
+	
 	newData := models.UserUpdate{
 		FullName: data.GetFullname(),
 		Email:    data.GetEmail(),
 	}
-	fmt.Println("UpdateUser Server:", newData)
 
+	// to Repo  ********************************
 	err := su.repo.UpdateUser(data.GetUsername(), &newData)
 	if err != nil {
-		// fmt.Println("ERror Update :",err)
-		// return &userProto.StatusResponse{Status: err.Error()}, err
+		
 		return &userProto.StatusResponse{}, err
 	}
-	return &userProto.StatusResponse{Status: "complete"}, nil
+	return &userProto.StatusResponse{Status: "update complete"}, nil
 }
 
 // mustEmbedUnimplementedUserServer implements users.UserServer

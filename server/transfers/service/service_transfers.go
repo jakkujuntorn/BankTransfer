@@ -26,11 +26,6 @@ func New_Service_Tranfers(transferRepo transfer_Repo.I_Repo_Transfers) transferP
 func (st *service_Transfer) Create_Transfer(ctx context.Context, dataTransfer *transferProto.Create_TransferRequest) (*transferProto.StatusResponse, error) {
 	fmt.Println("Create_Transfer ***************")
 
-	// err := st.transferRepo.Create_Transfer_Proto(dataTransfer)
-	// if err != nil {
-	// 	return &transferProto.StatusResponse{}, err
-	// }
-
 	// ปั้นข้อมูลใหม่ ****************
 	dataTo_Db := models.CreateTransferParams{
 		Owner:         dataTransfer.GetOwner(),
@@ -72,14 +67,14 @@ func (st *service_Transfer) Create_Withdraw(ctx context.Context, cw *transferPro
 	// fmt.Println("Create_Withdraw ***************")
 
 	// ปั้นข้อมูลใหม่ ******************************
-	dataDB := models.Create_Deposit_and_Withdraw{
+	dataTo_DB := models.Create_Deposit_and_Withdraw{
 		Owner:     cw.GetOwner(),
 		AccountID: int64(cw.GetAccountID()),
 		Amount:    int64(cw.GetAmount()),
 	}
 
 	// to DB *******************************
-	err := st.transferRepo.Create_Withdraw(&dataDB)
+	err := st.transferRepo.Create_Withdraw(&dataTo_DB)
 	if err != nil {
 		return nil, err
 	}

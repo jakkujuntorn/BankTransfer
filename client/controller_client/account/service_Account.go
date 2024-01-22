@@ -13,7 +13,7 @@ type Controller_Account struct {
 }
 
 type I_Account_Service interface {
-	CreateAccount(*CreateAccountRequest) error
+	CreateAccount(*CreateAccountRequest) (*StatusResponse,error)
 	GetAccount(ctx context.Context, in *GetAccountRequest) (*GetAccountResponse, error)
 	ListAccount(ctx context.Context, in *ListAccountRequest) (*GetListAccount_Response, error)
 	DeleteAccount(id int) error
@@ -26,31 +26,31 @@ func New_Service_Account(ac AccountClient) I_Account_Service {
 	}
 }
 
-func (ca *Controller_Account) CreateAccount(data *CreateAccountRequest) error {
+func (ca *Controller_Account) CreateAccount(data *CreateAccountRequest) (*StatusResponse,error) {
 
 	//  ปั้น token **********************
 	jwtToken, err := auth.New_JWT("ratthakorn")
 	if err != nil {
-		return err
+		return &StatusResponse{},err
 	}
 
 	//  VerifyToken ********************
 	payload, err := jwtToken.AuthorizeUser(ctx)
 	if err != nil {
-		return err
+		return &StatusResponse{},err
 	}
 
 	// ทำ message มายาก เลยตั้งปั้นข้อมูลยาก ******
 	data.Owner = &Owner{Owner: payload.Audience}
 
 	// to Server ***************************
-	responseData, err := ca.controller.CreateAccount(ctx, data)
-	_ = responseData
+	statusCreate, err := ca.controller.CreateAccount(ctx, data)
+	
 	if err != nil {
-		return err
+		return &StatusResponse{},err
 	}
 
-	return nil
+	return statusCreate,nil
 }
 
 func (ca *Controller_Account) GetAccount(ctx context.Context, in *GetAccountRequest) (*GetAccountResponse, error) {
@@ -67,7 +67,7 @@ func (ca *Controller_Account) GetAccount(ctx context.Context, in *GetAccountRequ
 		return &GetAccountResponse{}, err
 	}
 
-	in.Owner = payload.Audience
+	in.Owner = &payload.Audience
 
 	// to Server *******************************
 	responseData, err := ca.controller.GetAccount(ctx, in)
