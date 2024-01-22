@@ -36,10 +36,11 @@ func (ra *repo_Account) CreateAccount(account *models.CreateAccountParams) error
 
 
 	var ownerCount int64
-	// tx := ra.db.Table("accounts").Where("owner = ?", account.Owner).Count(&ownerCount)
-	// if tx.Error != nil {
-	// 	return tx.Error
-	// }
+
+	tx := ra.db.Table("accounts").Where("owner = ?", account.Owner).Count(&ownerCount)
+	if tx.Error != nil {
+		return tx.Error
+	}
 
 	// fmt.Println(ownerCount)
 	// เช็คจำนวน  account มีได้แค่ 3 account
@@ -48,10 +49,10 @@ func (ra *repo_Account) CreateAccount(account *models.CreateAccountParams) error
 		return errors.New("limit of create account")
 	}
 
-	// tx = ra.db.Table("accounts").Create(&account)
-	// if tx.Error != nil {
-	// 	return tx.Error
-	// }
+	tx = ra.db.Table("accounts").Create(&account)
+	if tx.Error != nil {
+		return tx.Error
+	}
 
 	return nil
 }
@@ -59,6 +60,8 @@ func (ra *repo_Account) CreateAccount(account *models.CreateAccountParams) error
 // GetAccount implements I_Repo_Account
 // ดึง account อันเดียว ของ owner นั้น
 func (ra *repo_Account) GetAccount(id int, owner string) (*models.Account, error) {
+	// fmt.Println("GetAccount server REpo")
+	
 	dataAccount := new(models.Account)
 	tx := ra.db.Table("accounts").Where("id =?", id).Where("owner=?", owner).First(dataAccount)
 	if tx.Error != nil {

@@ -4,6 +4,8 @@
 // - protoc             v4.23.3
 // source: user_service.proto
 
+// import "google/api/http.proto";
+
 package users
 
 import (
@@ -19,6 +21,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	User_LoginUser_FullMethodName          = "/users.User/LoginUser"
 	User_CreateUser_FullMethodName         = "/users.User/CreateUser"
 	User_GetUser_ByUsername_FullMethodName = "/users.User/GetUser_ByUsername"
 	User_UpdateUser_FullMethodName         = "/users.User/UpdateUser"
@@ -29,6 +32,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
+	LoginUser(ctx context.Context, in *User_LoginRequest, opts ...grpc.CallOption) (*Get_UserResponse, error)
 	CreateUser(ctx context.Context, in *Create_UserRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	GetUser_ByUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*Get_UserResponse, error)
 	UpdateUser(ctx context.Context, in *User_UpdateRequest, opts ...grpc.CallOption) (*StatusResponse, error)
@@ -41,6 +45,15 @@ type userClient struct {
 
 func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 	return &userClient{cc}
+}
+
+func (c *userClient) LoginUser(ctx context.Context, in *User_LoginRequest, opts ...grpc.CallOption) (*Get_UserResponse, error) {
+	out := new(Get_UserResponse)
+	err := c.cc.Invoke(ctx, User_LoginUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *userClient) CreateUser(ctx context.Context, in *Create_UserRequest, opts ...grpc.CallOption) (*StatusResponse, error) {
@@ -83,6 +96,7 @@ func (c *userClient) ChangePassword(ctx context.Context, in *Change_PasswordRequ
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
+	LoginUser(context.Context, *User_LoginRequest) (*Get_UserResponse, error)
 	CreateUser(context.Context, *Create_UserRequest) (*StatusResponse, error)
 	GetUser_ByUsername(context.Context, *Username) (*Get_UserResponse, error)
 	UpdateUser(context.Context, *User_UpdateRequest) (*StatusResponse, error)
@@ -94,6 +108,9 @@ type UserServer interface {
 type UnimplementedUserServer struct {
 }
 
+func (UnimplementedUserServer) LoginUser(context.Context, *User_LoginRequest) (*Get_UserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
+}
 func (UnimplementedUserServer) CreateUser(context.Context, *Create_UserRequest) (*StatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
@@ -117,6 +134,24 @@ type UnsafeUserServer interface {
 
 func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
 	s.RegisterService(&User_ServiceDesc, srv)
+}
+
+func _User_LoginUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User_LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).LoginUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_LoginUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).LoginUser(ctx, req.(*User_LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _User_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -198,6 +233,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "users.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "LoginUser",
+			Handler:    _User_LoginUser_Handler,
+		},
 		{
 			MethodName: "CreateUser",
 			Handler:    _User_CreateUser_Handler,

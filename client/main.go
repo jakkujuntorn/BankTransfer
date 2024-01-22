@@ -6,21 +6,20 @@ import (
 	controllerUsers "banktransferclient/controller_client/users"
 
 	"log"
-
 	"fmt"
-
+	"time"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"time"
-
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"net/http"
+	"context"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
 func main() {
 	// สร้าง insecure
 	creds := insecure.NewCredentials()
 
+	// gRPC Server *******************
 	// ฝั่ง client จะใช้ Dial
 	cc, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(creds))
 	if err != nil {
@@ -29,58 +28,58 @@ func main() {
 	defer cc.Close()
 
 	//********************** Account ******************************
-	// inteface ยังไม่เหมือน proto ****************
-	// จาก gRPC ************************
+	//  gRPC ************************
 	newAccountClient := controllerAccount.NewAccountClient(cc)
-	// my *****************************
-	controlerAccount := controllerAccount.New_Controller_Account(newAccountClient)
-	_ = controlerAccount
-	// Func Account ********************
-	// err = controlerAccount.CreateAccount(&controllerAccount.CreateAccountRequest{})
+	
+	// Service Account *****************************
+	serviceAccount := controllerAccount.New_Service_Account(newAccountClient)
 
-	// GetAccount เทสแล้ว ############################
-	// _,err = controlerAccount.GetAccount(2,"john5") 
+	// Handler Account ***************************
+	handlerAccount := controllerAccount.New_Handler_Account(serviceAccount)
 
-	// ListAccount เทสแล้ว ############################
-	// _,err = controlerAccount.ListAccount("john5") 
 
-	// err = controlerAccount.DeleteAccount(1)
+	// *************************** User ******************************
+	// gRPC ********************
+	newUserClient := controllerUsers.NewUserClient(cc)
+
+	// Service USer *********************
+	serviceUser := controllerUsers.New_Service_User(newUserClient)
+
+	// Handler user *******************
+	handlerUser:=controllerUsers.New_Handler_Account(serviceUser)
 
 	
+
 	// ************************* Transfer *****************************************
 	// gRPC ************************
 	newTransferClient := controllerTransfer.NewTransfersClient(cc)
-	// my **************
-	controllTransfer := controllerTransfer.New_Controller_Transfer(newTransferClient)
-	_ = controllTransfer
+	
+	// Service Transfer ***************************
+	newTransferService:=controllerTransfer.New_Service_Transfer(newTransferClient)
+	
+	// Handler Transfer ***************************
+	handlerTransfer := controllerTransfer.New_Handler_Transfer(newTransferService)
+	
 
-	// func Transfer
-	// controllTransfer.Create_Transfer(&controllerTransfer.Create_TransferRequest{})
-
-	// controllTransfer.Create_Deposit(&controllerTransfer.Create_DepositRequest{
-	// 	Owner: "russy",
-	// 	AccountID: 7,
-	// 	Amount: 700,
-	// }) //  ลองใหม่แก้ logic
-
-	// controllTransfer.Create_Withdraw(&controllerTransfer.Create_WithdrawRequest{
-	// 	Owner: "russy",
-	// 	AccountID: 7,
-	// 	Amount: 700,
-	// }) // ลองใหม่แก้ logic
+	
 
 	// ******************  Time condition for taransfer  **************************
 	// ถ้าส่งมาแบบนี้ "2023-12-27 14:46:04.495189+07" mepy'w'
 	setTime1 := time.Date(2023, 01, 01, 8, 59, 00, 11111111, time.UTC)
 	setTime2 := time.Date(2023, 12, 31, 8, 59, 00, 11111111, time.UTC)
-	
+
+	// fmt.Println(setTime1) // 2023-01-01 08:59:00.011111111 +0000 UTC
+	// fmt.Println(setTime2)
 	startTime, _ := time.Parse(time.RFC3339, setTime1.Format(time.RFC3339))
 	endTime, _ := time.Parse(time.RFC3339, setTime2.Format(time.RFC3339))
 
-	// fmt.Println("******************")
-	// fmt.Println(startTime)
-	// fmt.Println(startTime.Local().String())
-	// fmt.Println(startTime.Unix())
+	_ = startTime
+	_ = endTime
+
+	// fmt.Println("*******Time ***********")
+	// fmt.Println(startTime) //2023-01-01 08:59:00 +0000 UTC
+	// fmt.Println(startTime.Local().String()) //2023-01-01 15:59:00 +0700 +07
+	// fmt.Println(startTime.Unix()) // 1672563540
 
 	// อันนี้ใส time แบบ ธรมดา ############################
 	// startTime, err := time.Parse("2006-01-02", "2023-01-01")
@@ -95,21 +94,21 @@ func main() {
 	// }
 	// _ = endTime
 
-	// GetTransfer_ById เทส แล้ว ออก client ############################
-	controllTransfer.GetTransfer_ById(&controllerTransfer.GetTransfer_ByIdRequest{
-		AccountID: 1,
-		Owner:     "john5",
-		StartTime: &timestamppb.Timestamp{
-			Seconds: startTime.Unix(),
-			Nanos:   int32(time.Now().Nanosecond()),
-		},
-		EndTime: &timestamppb.Timestamp{
-			Seconds: endTime.Unix(),
-			Nanos:   int32(time.Now().Nanosecond()),
-		},
-	}) 
+	
+	// controllTransfer.GetTransfer_ById(&controllerTransfer.GetTransfer_ByIdRequest{
+	// 	AccountID: 1,
+	// 	Owner:     "john5",
+	// 	StartTime: &timestamppb.Timestamp{
+	// 		Seconds: startTime.Unix(),
+	// 		Nanos:   int32(time.Now().Nanosecond()),
+	// 	},
+	// 	EndTime: &timestamppb.Timestamp{
+	// 		Seconds: endTime.Unix(),
+	// 		Nanos:   int32(time.Now().Nanosecond()),
+	// 	},
+	// })
 
-// GetTransfer_ByOwner  เทสแล้ว ออก client ############################
+	// GetTransfer_ByOwner  เทสแล้ว ออก client ############################
 	// controllTransfer.GetTransfer_ByOwner(&controllerTransfer.GetTransfer_ByOwnerRequest{
 	// 	Owner:     "russy",
 	// 	StartTime: &timestamppb.Timestamp{
@@ -121,39 +120,55 @@ func main() {
 	// 		Nanos:   int32(time.Now().Nanosecond()),
 	// 	},
 	// })
+
+
+
+	// **********************  gRPC Service ******************************
+	run_gRPCGateWay(handlerAccount,handlerUser,handlerTransfer)
+
+
+}
+
+func run_gRPCGateWay(
+	handlerAccount controllerAccount.AccountClient,
+	habdlerUSer controllerUsers.UserClient,
+	handlerTransfer controllerTransfer.TransfersClient,
+	) {
+
+	// mux ************************
+	mux := runtime.NewServeMux()
+
+	// endPoint:=flag.String("grpc-server-endpoint","localhost:8081")
+	//************************ gate ways **************************
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	
-	// ****************************ไม่ใช้แล้ว *********************************
-	// อันนี้ไม่ต้องมีก็ได้ เพรา getTransfer  Byid มันน่าจะครบแล้ว ************************
-	// controllTransfer.ListStatement(&controllerTransfer.ListStatementRequest{})
-
-	// *************************** User ******************************
-	// gRPC ********************
-	newUserClient := controllerUsers.NewUserClient(cc)
-
-	// my *********************************
-	controllUser := controllerUsers.New_Controller_User(newUserClient)
-	_ = controllUser
-
-	//func User *********************
-
-	// controllUser.CreateUser(&controllerUsers.Create_UserRequest{})
-
-	// controllUser.GetUser_ByUsername(&controllerUsers.Username{Username: "john5"}) // ************************
-
-	// UpdateUser เทสแล้ว ############################
-	// controllUser.UpdateUser(&controllerUsers.User_UpdateRequest{
-	// 	Username: "russy",
-	// 	Fullname: "russy jack",
-	// 	Email: "rj@gmail.com",
-	// }) 
-
-	// ChangePassword  เทสแล้ว ############################
-	// controllUser.ChangePassword(&controllerUsers.Change_PasswordRequest{
-	// 	Username: "russy",
-	// 	Password: "8888",
-	// }) 
-
+	// สร้าง  GateWay or EndPoint **************************
+	err := controllerAccount.RegisterAccountHandlerFromEndpoint(context.Background(), mux, "localhost:8080", opts)
 	if err != nil {
-		fmt.Println("Client Error : ", err.Error())
+		fmt.Println(err.Error())
 	}
+
+	// ************************  ต้องใช้ func นี้ด้วย **************************
+	// Account  *************************************
+	// func พวกนี้จะรับ Interface Client ที่  Proto Gen มา
+	// ต้องสร้าง struct ที่ confrom  ตาม interface Client ที่ Proto Gen ขึ้นมา
+	err = controllerAccount.RegisterAccountHandlerClient(context.Background(), mux, handlerAccount)
+	
+	// User  **************************************
+	// func พวกนี้จะรับ Interface Client ที่  Proto Gen มา
+	// ต้องสร้าง struct ที่ confrom  ตาม interface Client ที่ Proto Gen ขึ้นมา
+	err = controllerUsers.RegisterUserHandlerClient(context.Background(), mux,habdlerUSer)
+
+	// Transfer  ***********************************
+	// func พวกนี้จะรับ Interface Client ที่  Proto Gen มา
+	// ต้องสร้าง struct ที่ confrom  ตาม interface Client ที่ Proto Gen ขึ้นมา
+	err = controllerTransfer.RegisterTransfersHandlerClient(context.Background(), mux,handlerTransfer)
+	
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println("Start gRPC Gateway.............")
+	// ****************** http **********************************
+	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 }

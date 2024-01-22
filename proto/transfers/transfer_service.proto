@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "transfer_message.proto";
+import "google/api/annotations.proto";
 
 package transfer; // package อันนี้เป็นของ proto
 
@@ -8,12 +9,46 @@ package transfer; // package อันนี้เป็นของ proto
 option go_package="./transfers"; // package อันนี้เป็นของ go
 
 
-
 service Transfers {
-    rpc Create_Transfer(Create_TransferRequest) returns(StatusResponse);
-    rpc Create_Deposit(Create_DepositRequest) returns(StatusResponse);
-    rpc Create_Withdraw(Create_WithdrawRequest) returns(StatusResponse);
-    rpc GetTransfer_ById(GetTransfer_ByIdRequest) returns(GetTransfer_Response);// array
-    rpc GetTransfer_ByOwner(GetTransfer_ByOwnerRequest) returns(GetTransfer_Response); // array
-    rpc ListStatement(ListStatementRequest) returns(ListStatementResponse);
+    
+    rpc Create_Transfer(Create_TransferRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/transfer/createtransfer"
+            body : "*"
+          };
+    };
+
+    rpc Create_Deposit(Create_DepositRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/transfer/createdeposit"
+            body : "*"
+          };
+    };
+
+    rpc Create_Withdraw(Create_WithdrawRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/transfer/createwithdraw"
+            body : "*"
+          };
+    };
+
+    rpc GetTransfer_ById(GetTransfer_ByIdRequest) returns(GetTransfer_Response){
+        option (google.api.http) = {
+            post : "/v1/transfer/gettransferbyid/{accountID}"
+            body : "*"
+          };
+    };
+
+    rpc GetTransfer_ByOwner(GetTransfer_ByOwnerRequest) returns(GetTransfer_Response){
+        option (google.api.http) = {
+            post : "/v1/transfer/gettransferbyowner"
+            body : "*"
+          };
+    };
+
+    rpc ListStatement(ListStatementRequest) returns(ListStatementResponse){
+        option (google.api.http) = {
+            get : "/v1/transfer/liststatement"
+          };
+    };
 }

@@ -8,36 +8,38 @@ package transfer; // package อันนี้เป็นของ proto
 option go_package="./transfers"; // package อันนี้เป็นของ go
 
 message Create_TransferRequest{
-    string owner = 1;
+    optional string owner = 1;
     int32 fromAccountID = 2;
     int32 toAccountID =3;
     int32 amount = 4;
     google.protobuf.Timestamp created_date = 5;
 }
 
+// repeated  array
+
 message Create_DepositRequest{
-    string owner = 1;
+    optional string owner = 1;
     int32 accountID = 2;
     int32 amount = 4;
 }
 
 message Create_WithdrawRequest{
-    string owner = 1;
+    optional string owner = 1;
     int32 accountID = 2;
     int32 amount = 4;
 }
 
 message GetTransfer_ByIdRequest{
     int32 accountID =1;
-    string owner = 2;
-    google.protobuf.Timestamp startTime = 32;
-    google.protobuf.Timestamp endTime = 4;
+    optional  string owner = 2;
+    string startTime = 32;
+    string  endTime = 4;
 }
 
 message GetTransfer_ByOwnerRequest{
-    string Owner = 1;
-    google.protobuf.Timestamp startTime = 2;
-    google.protobuf.Timestamp endTime = 3;
+    optional string Owner = 1;
+    string startTime = 2;
+    string endTime = 3;
 }
 
 message GetTransfer_Response{

@@ -4,8 +4,6 @@
 // - protoc             v4.23.3
 // source: account_service.proto
 
-// import "account_message.proto"; // แบบนี้ gen ได้
-
 package account
 
 import (
@@ -31,9 +29,13 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountClient interface {
+	// Create Accont ************************************
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*StatusResponse, error)
+	// Get Accont ********************************
 	GetAccount(ctx context.Context, in *GetAccountRequest, opts ...grpc.CallOption) (*GetAccountResponse, error)
+	// List Accont ********************************
 	ListAccount(ctx context.Context, in *ListAccountRequest, opts ...grpc.CallOption) (*GetListAccount_Response, error)
+	// Delete Accont ********************************
 	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 }
 
@@ -85,9 +87,13 @@ func (c *accountClient) DeleteAccount(ctx context.Context, in *DeleteAccountRequ
 // All implementations must embed UnimplementedAccountServer
 // for forward compatibility
 type AccountServer interface {
+	// Create Accont ************************************
 	CreateAccount(context.Context, *CreateAccountRequest) (*StatusResponse, error)
+	// Get Accont ********************************
 	GetAccount(context.Context, *GetAccountRequest) (*GetAccountResponse, error)
+	// List Accont ********************************
 	ListAccount(context.Context, *ListAccountRequest) (*GetListAccount_Response, error)
+	// Delete Accont ********************************
 	DeleteAccount(context.Context, *DeleteAccountRequest) (*StatusResponse, error)
 	mustEmbedUnimplementedAccountServer()
 }

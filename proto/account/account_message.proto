@@ -17,8 +17,8 @@ message CreateAccountRequest{
 
 
 message GetAccountRequest{
-    ID id = 1;
-    Owner owner = 2; 
+    string  id = 1; 
+    string owner = 2;
 }
 
 message GetAccountResponse{

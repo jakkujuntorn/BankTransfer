@@ -2,6 +2,10 @@ syntax = "proto3";
 
 import "user_message.proto";
 
+import "google/api/annotations.proto";
+
+// import "google/api/http.proto";
+
 package users; // package อันนี้เป็นของ proto
 
 // build ลงใน project Go *****
@@ -10,8 +14,34 @@ option go_package="./users"; // package อันนี้เป็นของ 
 
 
 service User {
-    rpc CreateUser(Create_UserRequest) returns(StatusResponse);
-    rpc GetUser_ByUsername(Username) returns(Get_UserResponse);
-    rpc UpdateUser(User_UpdateRequest) returns(StatusResponse);
-    rpc ChangePassword(Change_PasswordRequest) returns(StatusResponse);
+    rpc LoginUser(User_LoginRequest) returns(Get_UserResponse){
+        option (google.api.http) = {
+            post : "/v1/user/loginuser"
+            body : "*"
+          };
+    };
+   
+    rpc CreateUser(Create_UserRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/user/createauser"
+            body : "*"
+          };
+    };
+    rpc GetUser_ByUsername(Username) returns(Get_UserResponse){
+        option (google.api.http) = {
+            get : "/v1/user/getuser"
+          };
+    };
+    rpc UpdateUser(User_UpdateRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/user/updateuser"
+            body : "*"
+          };
+    };
+    rpc ChangePassword(Change_PasswordRequest) returns(StatusResponse){
+        option (google.api.http) = {
+            post : "/v1/user/changepassword"
+            body : "*"
+          };
+    };
 }

@@ -69,28 +69,28 @@ func ValidateSecretCode(value string) error {
 }
 
 
-func ValidateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
+// func ValidateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 
-	// pb.CreateUserRequest จะดึงค่าตัวแปรที่สร้างไว้กับ proto ได้  username, password, email, fullname 
-	if err := ValidateUsername(req.GetUsername()); err != nil {
-		// ส่งข้อมูลไปปั้น error ใหม่ **
-		violations = append(violations, fieldViolation("username", err))
-	}
+// 	// pb.CreateUserRequest จะดึงค่าตัวแปรที่สร้างไว้กับ proto ได้  username, password, email, fullname 
+// 	if err := ValidateUsername(req.GetUsername()); err != nil {
+// 		// ส่งข้อมูลไปปั้น error ใหม่ **
+// 		violations = append(violations, fieldViolation("username", err))
+// 	}
 
-	// Password
-	if err := ValidatePassword(req.GetPassword()); err != nil {
-		violations = append(violations, fieldViolation("password", err))
-	}
+// 	// Password
+// 	if err := ValidatePassword(req.GetPassword()); err != nil {
+// 		violations = append(violations, fieldViolation("password", err))
+// 	}
 
-	// Fullanem
-	if err := ValidateFullName(req.GetFullName()); err != nil {
-		violations = append(violations, fieldViolation("full_name", err))
-	}
+// 	// Fullanem
+// 	if err := ValidateFullName(req.GetFullName()); err != nil {
+// 		violations = append(violations, fieldViolation("full_name", err))
+// 	}
 
-	// Email
-	if err := ValidateEmail(req.GetEmail()); err != nil {
-		violations = append(violations, fieldViolation("email", err))
-	}
+// 	// Email
+// 	if err := ValidateEmail(req.GetEmail()); err != nil {
+// 		violations = append(violations, fieldViolation("email", err))
+// 	}
 
-	return violations
-}
+// 	return violations
+// }

@@ -23,10 +23,21 @@ message Get_UserResponse{
     string email =3 ;
     google.protobuf.Timestamp passwordChangedAt = 4;
     google.protobuf.Timestamp createdAt = 5;
+    string token = 6;
 }
 
 message Username {
     string username = 1;
+}
+
+message User_LoginRequest{
+    string username = 1;
+    string password = 2;
+}
+message User_LoginResponse{
+    string username = 1;
+    string fullname = 2;
+    string email =3 ;
 }
 
 message User_UpdateRequest{
@@ -36,8 +47,8 @@ message User_UpdateRequest{
 }
 
 message Change_PasswordRequest{
-    string username = 1;
-    string password = 2;
+    optional string username = 1; // ใน go จะเป็น pointer
+    string newpassword = 2;
 
 }
 

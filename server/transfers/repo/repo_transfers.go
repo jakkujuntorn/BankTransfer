@@ -7,21 +7,26 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+
+	transferProto "banktransfer/transfers"
 )
 
 type I_Repo_Transfers interface {
 	// func ที่ต้องรับ struct เพราะต้องใช้งาน DB ไม่ใช้ใช้งาน interface
 	transaction_Postgres(func(*repo_Transfers) error) error
 
-	// โอน
+	// โอน เดิม
 	Create_Transfer(dataTransfer *models.CreateTransferParams) error
+
+	// โอน Proto
+	Create_Transfer_Proto(dataTransfer *transferProto.Create_TransferRequest) error
 	//ฝาก
 	Create_Deposit(dataDeposit *models.Create_Deposit_and_Withdraw) error
 	// ถอน
 	Create_Withdraw(dataWithdraw *models.Create_Deposit_and_Withdraw) error
 
-	// เช็คการโอนทั้งหมด (Transfer เท่านั้น) ของบัญชีนั้นๆ (ตาม account) และเลือกช่วงเวลา
-	// เช็คใน transfers DB (จะรู้ว่าดราโอนไปให้ใครหรือ ใครโอนมาให้เรา)
+	
+	// เช็คการทำ transfers ทั้งหมด ฝาก, โอน, ถอน
 	// ปรับ entries แล้วไปดึงค่าจาก entries แทน *****************
 	GetTransfer_ById(idAccount int64,owner string , startTime, endTime string) ([]models.ListTransfers_ForOwner, error)
 
@@ -30,14 +35,7 @@ type I_Repo_Transfers interface {
 	// ปรับ entries แล้วไปดึงค่าจาก entries แทน ******************
 	GetTransfer_ByOwner(ownerAccount, startTime, endTime string) ([]models.ListTransfers_ForOwner, error)
 
-	// เอาไว้ดึงข้อมูลที่จะเช็คเป็นรายบัญชี เช่น อยากรู้ว่า
-	// บัญชี 1 มีการทำธุรกรรมอะไรบ้าง
-	// ฝาก, ถอน, โอน(โอนต้องไปถึงจาก transfers DB มา join กันด้วย )
-	// และเลือกช่วงเวลา
-	// เช็คใน entries DB
-	// เงื่อนไข ถ้า amount เป็น - แสดงว่าโอนออก
-	// เงื่อนไข ถ้า amount เป็น + แสดงว่าโอนเข้ามา
-
+	// ไม่ได้ใช้แล้ว 
 	ListStatement(accountId int64) ([]models.Transfer, error)
 
 	// หบัวจาก ฝาก,ถอน, โอน ต้องมาอัพเดท
@@ -45,6 +43,7 @@ type I_Repo_Transfers interface {
 
 	// **************************** Check Data  Core ****************
 	checkDataFor_Transfer(dataCheck *models.CreateTransferParams) (destinationAccountData *models.Account,err error)
+	checkDataFor_Transfer_Proto(dataCheck *transferProto.Create_TransferRequest) (destinationAccountData *models.Account,err error)
 	checkDataFor_Deposit_and_Withdraw(dataCheck *models.Create_Deposit_and_Withdraw) error
 
 	// Check data inside ****************
@@ -63,6 +62,8 @@ type repo_Transfers struct {
 	db *gorm.DB
 }
 
+// ตรงนี้ return repo_Transfers  เพราะ ต้องใช้ตรงทำ transaction_Postgres
+// ถ้า return interface จะ ทำ transaction_Postgres ไม่ได้
 func New_Repo_Transfer(db *gorm.DB) *repo_Transfers {
 	return &repo_Transfers{
 		db: db,
@@ -270,20 +271,60 @@ func (rt *repo_Transfers) checkDataFor_Transfer(dataCheck *models.CreateTransfer
 	return &models.Account{},nil
 }
 
+// proto ***************************
+func (rt *repo_Transfers) checkDataFor_Transfer_Proto(dataCheck *transferProto.Create_TransferRequest) (destinationAccountData *models.Account,err error) {
+	
+	fmt.Println("Create_Transfer ***************")
+	// ในแต่ละ func มันจะ  query ทุก func ซึ่งมันเยอะไป
+	//  query ที่เดียวแล้วส่งค่าเข้าไปเช็คแทน
+
+	// query From Account ********************
+	fromAccount := new(models.Account)
+	rt.db.Table("accounts").Where("id=?", dataCheck.GetFromAccountID()).Where("owner=?", dataCheck.GetOwner()).First(fromAccount)
+
+	// query To Account **********************
+	toAccount := new(models.Account)
+	rt.db.Table("accounts").Where("id=?", dataCheck.GetToAccountID()).First(toAccount)
+	// เอาข้อมูลที่ได้ส่งเข้าไปใน func ต่างๆ เพื่อเช็ค error
+
+	var transferErr error
+	// เช็ค error ต่างๆ ******************
+	// เช็ค owner, accoutTo, currency, blance
+	if transferErr = rt.checkAccountOwner(fromAccount.Owner, fromAccount.ID); transferErr == nil {
+		if transferErr = rt.checkAccountTo(fromAccount.ID); transferErr == nil {
+			if transferErr = rt.checkCurrency(fromAccount.Currency, toAccount.Currency); transferErr == nil {
+				if transferErr = rt.checkAccountBalance(int64(dataCheck.GetAmount()), fromAccount.Balance); transferErr == nil {
+					return toAccount,nil
+				}
+			}
+		}
+	}
+
+	if transferErr != nil {
+		errorTese := fmt.Sprintf(transferErr.Error())
+		return &models.Account{},errors.New(errorTese)
+	}
+
+	return &models.Account{},nil
+}
+
 // CreateTransfer implements I_Repo_Transfers
 func (rt *repo_Transfers) Create_Transfer(dataTransfer *models.CreateTransferParams) error {
 
 	// Check Data for Transfers
 	// ตรงนี้มีข้อมูล  ของ ผู้รับโอนด้วย ***************
+	// อันเก่าใช้กับ models ปกติ
 	destinationAccountData,errCheck := rt.checkDataFor_Transfer(dataTransfer)
 	if errCheck != nil {
 		return errCheck
 	}
 
+
 	//****************** entries ***************
 	// from Account ต้อง - blance
 	// to Account ต้อง + blance
 	// ทำเป็น array  จะได้ create  ครั้งเดียว
+	// dataEntries  อันเก่า ********************************
 	dataEntries := []models.Entry{
 		{
 			// FromAccountID *********************
@@ -305,7 +346,9 @@ func (rt *repo_Transfers) Create_Transfer(dataTransfer *models.CreateTransferPar
 		},
 	}
 
+
 	// *************** accounts *****************
+	// dataAccount อันเก่า *****************************
 	dataAccount := []models.UpdateAccountParams{
 		{
 			// FromAccountID  *******************
@@ -319,8 +362,8 @@ func (rt *repo_Transfers) Create_Transfer(dataTransfer *models.CreateTransferPar
 		},
 	}
 
-	// ใสหรือไม่ใสก็ได้มั้ง ********
-	dataTransfer.CreatedAt = time.Now()
+	// ใสหรือไม่ใสก็ได้มั้ง *******************
+	// dataTransfer.CreatedAt = time.Now()
 
 	// from Account ต้อง - blance
 	// to Account ต้อง + blance
@@ -330,24 +373,119 @@ func (rt *repo_Transfers) Create_Transfer(dataTransfer *models.CreateTransferPar
 		// Create Trasfer to DB ***********************
 		tx := p.db.Table("transfers").Create(&dataTransfer)
 		if tx.Error != nil {
-			fmt.Println("TRnsfer naja")
+			// fmt.Println("TRnsfer naja")
 			return tx.Error
 		}
 
 		// create Entries  to DB   **************************
+		// อันนี้ อาจไม่ต้องใช้แล้ว
+		//ปรับ DB Transfer ใหม่ มันรองรับ entries แล้ว ***************
 		tx = p.db.Table("entries").Create(&dataEntries)
 		if tx.Error != nil {
-			fmt.Println("entries naja")
+			// fmt.Println("entries naja")
 			return tx.Error
 		}
 
 		// update Accounts to DB  ***************************
 		errUpdate := p.UpdateAccount_Blance(dataAccount)
 		if errUpdate != nil {
-			fmt.Println("accounts naja")
+			// fmt.Println("accounts naja")
 			return errUpdate
 		}
-		fmt.Println("Transfer is complete")
+		// fmt.Println("Transfer is complete")
+		return nil
+	})
+
+}
+
+// Proto ***************
+func (rt *repo_Transfers) Create_Transfer_Proto(dataTransfer *transferProto.Create_TransferRequest) error {
+
+	// Check Data for Transfers
+	// ตรงนี้มีข้อมูล  ของ ผู้รับโอนด้วย ***************
+	// อันเก่าใช้กับ models ปกติ
+	destinationAccountData,errCheck := rt.checkDataFor_Transfer_Proto(dataTransfer)
+	if errCheck != nil {
+		return errCheck
+	}
+
+
+	//****************** entries ***************
+	// from Account ต้อง - blance
+	// to Account ต้อง + blance
+	// ทำเป็น array  จะได้ create  ครั้งเดียว
+
+	// dataEntries  อันใหม่  ********************************
+	dataEntries := []models.Entry{
+		{
+			// FromAccountID *********************
+			AccountID:    int64(dataTransfer.GetFromAccountID()),
+			Amount:       -int64(dataTransfer.GetAmount()),
+			CreatedAt:    time.Now(),
+			Entries_type: "transfer",
+			Owner:dataTransfer.GetOwner() ,
+			Destination_account:int64(dataTransfer.GetToAccountID()) ,
+		},
+		{
+			// ToAccountID  *******************
+			AccountID:    int64(dataTransfer.GetToAccountID()),
+			Amount:       int64(dataTransfer.GetAmount()),
+			CreatedAt:    time.Now(),
+			Entries_type: "transfer",
+			Owner: destinationAccountData.Owner,
+			Destination_account:int64(dataTransfer.GetFromAccountID()),
+		},
+	}
+
+	// *************** accounts *****************
+	// dataAccount อันใหม่ *****************************
+	dataAccount := []models.UpdateAccountParams{
+		{
+			// FromAccountID  *******************
+			ID:      int64(dataTransfer.GetFromAccountID()),
+			Balance: -int64(dataTransfer.GetAmount()),
+		},
+		{
+			// ToAccountID  *******************
+			ID:      int64(dataTransfer.GetToAccountID()),
+			Balance: int64(dataTransfer.GetAmount()),
+		},
+	}
+
+
+	
+	// ใสหรือไม่ใสก็ได้มั้ง *******************
+	// dataTransfer.CreatedAt = time.Now()
+
+	// from Account ต้อง - blance
+	// to Account ต้อง + blance
+	// ทำเป็น array  จะได้ create  ครั้งเดียว
+	//**************** ทำ TRanscation  ****************
+	return rt.transaction_Postgres(func(p *repo_Transfers) error {
+		// Create Trasfer to DB ***********************
+		fmt.Println("transaction_Postgres ***************")
+		tx := p.db.Table("transfers").Create(&dataTransfer)
+		if tx.Error != nil {
+			// fmt.Println("TRnsfer naja")
+			return tx.Error
+		}
+
+		// create Entries  to DB   **************************
+		// อันนี้ อาจไม่ต้องใช้แล้ว
+		//ปรับ DB Transfer ใหม่ มันรองรับ entries แล้ว ***************
+		tx = p.db.Table("entries").Create(&dataEntries)
+		if tx.Error != nil {
+			// fmt.Println("entries naja")
+			return tx.Error
+		}
+
+		// update Accounts to DB  ***************************
+		errUpdate := p.UpdateAccount_Blance(dataAccount)
+		if errUpdate != nil {
+			// fmt.Println("accounts naja")
+			return errUpdate
+		}
+		// fmt.Println("Transfer is complete")
 		return nil
 	})
 
@@ -381,7 +519,6 @@ func (rt *repo_Transfers) transaction_Postgres(fn func(*repo_Transfers) error) e
 // เช็คการโอนทั้งหมด ของบัญชีนั้นๆ (ตาม account) และเลือกช่วงเวลา
 func (rt *repo_Transfers) GetTransfer_ById(idAccount int64,owner string, startTime, endTime string) (dataTransfers []models.ListTransfers_ForOwner, err error) {
 
-	// dataTransfers := []models.ListTransfers_ForOwner{}
 
 	tx := rt.db.Table("entries").Where("account_id=?", idAccount).
 	Where("owner = ?",owner).

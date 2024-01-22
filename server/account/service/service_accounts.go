@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -21,15 +22,23 @@ func New_Service_Account(ac account_Repo.I_Repo_Account) accountProto.AccountSer
 	return &service_Account{accountRepo: ac}
 }
 
-func (sa *service_Account) CreateAccount(context.Context, *accountProto.CreateAccountRequest) (*accountProto.StatusResponse, error) {
-
+func (sa *service_Account) CreateAccount(ctx context.Context, ac *accountProto.CreateAccountRequest) (*accountProto.StatusResponse, error) {
+	// fmt.Println(ac.GetOwner().Owner)
+	// fmt.Println(ac.GetBalance().Balance)
+	// fmt.Println(ac.GetCurrency().Currency)
 	fmt.Println("Create Account Server .....................")
 	return &accountProto.StatusResponse{}, nil
 }
 
 func (sa *service_Account) GetAccount(ctx context.Context, data *accountProto.GetAccountRequest) (*accountProto.GetAccountResponse, error) {
+	// fmt.Println("Get Account server service")
+	
+	id, err := strconv.Atoi(data.GetId())
+	if err != nil {
+		return &accountProto.GetAccountResponse{}, err
+	}
 
-	accountDB, err := sa.accountRepo.GetAccount(int(data.GetId().Id), data.GetOwner().Owner)
+	accountDB, err := sa.accountRepo.GetAccount(id, data.GetOwner())
 	if err != nil {
 		return &accountProto.GetAccountResponse{}, err
 	}
@@ -40,14 +49,15 @@ func (sa *service_Account) GetAccount(ctx context.Context, data *accountProto.Ge
 		Owner:    &accountProto.Owner{Owner: accountDB.Owner},
 		Balance:  &accountProto.Balance{Balance: int32(accountDB.Balance)},
 		Currency: &accountProto.Currency{Currency: accountDB.Currency},
-		// ดูเรื่องเวลา ยังไม่ถูกใจ
+		// ดูเรื่องเวลา ยังไม่ถูกใจ **********
 		CreatedDate: &timestamppb.Timestamp{
 			Seconds: accountDB.CreatedAt.Unix(),
 			Nanos:   int32(accountDB.CreatedAt.Nanosecond()),
 		},
-		// Errortext: &accountProto.ErrorText{Text: "No Error"},
+		
 	}
 
+	// return  &accountProto.GetAccountResponse{},nil
 	return accountResponse, nil
 }
 

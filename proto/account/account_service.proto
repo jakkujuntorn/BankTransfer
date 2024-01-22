@@ -2,7 +2,10 @@ syntax = "proto3";
 
 
 import "account_message.proto"; // แบบนี้ gen ไม่ได้
-// import "account_message.proto"; // แบบนี้ gen ได้
+
+import "google/api/annotations.proto";
+// import "google/api/http.proto";
+
 
 
 package account; // package อันนี้เป็นของ proto
@@ -24,7 +27,7 @@ service Account {
     // Get Accont ********************************
     rpc GetAccount(GetAccountRequest) returns(GetAccountResponse){
         option (google.api.http) = {// googel.api ต้อง gen ขึ้นมาเอง ***********
-            get : "/v1/account/getaccount"
+            get : "/v1/account/getaccount/{id}"
           };
     };
 
