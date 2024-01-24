@@ -1,3 +1,13 @@
+- จำลองเว็บไซด์  ธนาคาร (ฝาก, โอน, ถอน, เรียกดู statement)
+ 
+        -gRPC (Gateway)
+        -Hexagonal Architecture
+            -port and adaptors
+        -DB
+            -Postgres 
+        -Code Structure
+            -By Feature
+        
 - middleware gRPC ขอข้ามไปก่อน มันเยอะสะเหลือเกิน
 
 - Valisate data ต่างๆ
