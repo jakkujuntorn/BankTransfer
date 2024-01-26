@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
+"sync"
 	"gorm.io/gorm"
 
 	transferProto "banktransfer/transfers"
@@ -15,7 +15,7 @@ type I_Repo_Transfers interface {
 	// func ที่ต้องรับ struct เพราะต้องใช้งาน DB ไม่ใช้ใช้งาน interface
 	transaction_Postgres(func(*repo_Transfers) error) error
 
-	// โอน เดิม
+	// โอน 
 	Create_Transfer(dataTransfer *models.CreateTransferParams) error
 
 	// โอน Proto 
@@ -43,8 +43,10 @@ type I_Repo_Transfers interface {
 
 	// **************************** Check Data  Core ****************
 	checkDataFor_Transfer(dataCheck *models.CreateTransferParams) (destinationAccountData *models.Account, err error)
+	
 	// ไม่ได้ใช้ *******************
 	checkDataFor_Transfer_Proto(dataCheck *transferProto.Create_TransferRequest) (destinationAccountData *models.Account, err error)
+	
 	checkDataFor_Deposit(dataCheck *models.Create_Deposit_and_Withdraw) error
 	checkDataFor_Withdraw(dataCheck *models.Create_Deposit_and_Withdraw) error
 
@@ -62,6 +64,7 @@ type I_Repo_Transfers interface {
 
 type repo_Transfers struct {
 	db *gorm.DB
+	mt sync.Mutex
 }
 
 // ตรงนี้ return repo_Transfers  เพราะ ต้องใช้ตรงทำ transaction_Postgres
@@ -175,7 +178,8 @@ func (ra *repo_Transfers) checkDataFor_Deposit(dataCheck *models.Create_Deposit_
 }
 func (ra *repo_Transfers) checkDataFor_Withdraw(dataCheck *models.Create_Deposit_and_Withdraw) error {
 
-	// เช็คบัญชีที่จะถอนวาสมีอยู๋ริงไหม ******************
+	// เช็คบัญชีที่จะถอนวา่มีอยู๋ริงไหม ******************
+	ra.mt.Lock()
 	check_Account := new(models.CreateAccountParams)
 	tx := ra.db.Table("accounts").Where("owner =?", dataCheck.Owner).Where("id =?", dataCheck.AccountID).First(&check_Account)
 	if tx.Error != nil {
@@ -186,12 +190,12 @@ func (ra *repo_Transfers) checkDataFor_Withdraw(dataCheck *models.Create_Deposit
 	if check_Account.Balance < dataCheck.Amount {
 		return errors.New("money not enough")
 	}
-
+	ra.mt.Unlock()
 	return nil
 }
 
 func (ra *repo_Transfers) UpdateAccount_Blance(accountUpdate []models.UpdateAccountParams) error {
-
+ra.mt.Lock()
 	// logic อันนี้ได้ แต่ดีรึป่าวไม่รู้ *************************
 	// accountParams.Balance = accountParams.Balance + accountUpdate.Balance
 	// tx = ra.db.Table("accounts").Where("id =?", accountUpdate.ID).Updates(&accountParams)
@@ -207,7 +211,7 @@ func (ra *repo_Transfers) UpdateAccount_Blance(accountUpdate []models.UpdateAcco
 			return tx.Error
 		}
 	}
-
+	ra.mt.Unlock()
 	return nil
 }
 

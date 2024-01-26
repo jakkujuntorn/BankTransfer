@@ -126,7 +126,6 @@ func main() {
 	// **********************  gRPC Service ******************************
 	run_gRPCGateWay(handlerAccount,handlerUser,handlerTransfer)
 
-
 }
 
 func run_gRPCGateWay(
